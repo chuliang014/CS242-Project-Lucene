@@ -3,11 +3,16 @@ package com.lucene.index;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
+import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -26,8 +31,12 @@ public class luceneIndexer {
 		super();
 		// getting the path to store
 		Directory dir = FSDirectory.open(new File(indexDir));
-		Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_47);
-		IndexWriterConfig con = new IndexWriterConfig(Version.LUCENE_47, analyzer);
+		//Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_47);
+		Map<String,Analyzer> analyzerPerField = new HashMap<String,Analyzer>();
+		analyzerPerField.put("header", new KeywordAnalyzer());
+		PerFieldAnalyzerWrapper aWrapper =
+				new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_47), analyzerPerField);
+		IndexWriterConfig con = new IndexWriterConfig(Version.LUCENE_47, aWrapper);
 		writer = new IndexWriter(dir, con);
 	}
 
@@ -81,18 +90,21 @@ public class luceneIndexer {
 		// parsing jsonFile
 		JsonObject jso = parseJSONFile(files.getAbsolutePath());
 		// storing header, url, body into indexing file. If NO, not store
-		doc.add(new TextField("header", jso.get("header").toString(), Field.Store.YES));
-		doc.add(new TextField("url", jso.get("url").toString(), Field.Store.YES));
-		doc.add(new TextField("body", jso.get("body").toString(), Field.Store.YES));
+		// set different weights
+		TextField HEADER = new TextField("header", jso.get("header").toString(), Field.Store.YES);
+		HEADER.setBoost(1.5F);
+		doc.add(HEADER);
+		doc.add(new StringField("url", jso.get("url").toString(), Field.Store.YES));
+		doc.add(new TextField("body", jso.get("body").toString(), Field.Store.NO));
 
 		return doc;
 	}
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		String indexDir = "/Users/vincent/Learning-Data/cs242/project/CS242-Project-Lucene/indexDir";
+		String indexDir = "../Index";
 
-		String dataDir = "/Users/vincent/Learning-Data/cs242/project/CS242-Project-Crawler/data";
+		String dataDir = "../data";
 
 		luceneIndexer indexer = null;
 		int numIndex = 0;
@@ -117,7 +129,7 @@ public class luceneIndexer {
 			}
 		}
 		long end = System.currentTimeMillis();
-		System.out.println("Indexing  " + numIndex + "  files，and took  " + (end - start) + "  ms");
+		System.out.println("Indexing  " + numIndex + "  files, and took  " + (end - start) + "  ms");
 	}
 
 }
