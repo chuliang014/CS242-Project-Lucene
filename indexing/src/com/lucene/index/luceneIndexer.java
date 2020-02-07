@@ -32,6 +32,7 @@ public class luceneIndexer {
 		// getting the path to store
 		Directory dir = FSDirectory.open(new File(indexDir));
 		//Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_47);
+		//
 		Map<String,Analyzer> analyzerPerField = new HashMap<String,Analyzer>();
 		analyzerPerField.put("header", new KeywordAnalyzer());
 		PerFieldAnalyzerWrapper aWrapper =
@@ -91,6 +92,7 @@ public class luceneIndexer {
 		JsonObject jso = parseJSONFile(files.getAbsolutePath());
 		// storing header, url, body into indexing file. If NO, not store
 		// set different weights
+		//
 		TextField HEADER = new TextField("header", jso.get("header").toString(), Field.Store.YES);
 		HEADER.setBoost(1.5F);
 		doc.add(HEADER);
