@@ -2,11 +2,17 @@ package com.lucene.index;
 
 import java.io.File;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
+import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
@@ -26,9 +32,15 @@ public class ReaderByIndexerTest {
 
 		IndexSearcher indexSearch = new IndexSearcher(reader);
 
-		Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
-
-		QueryParser parser = new QueryParser(Version.LUCENE_CURRENT, "header", analyzer);
+		//Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
+		//
+		Map<String,Analyzer> analyzerPerField = new HashMap<String,Analyzer>();
+		analyzerPerField.put("header", new KeywordAnalyzer());
+		PerFieldAnalyzerWrapper aWrapper =
+				new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_47), analyzerPerField);
+		
+		QueryParser parser = new MultiFieldQueryParser(Version.LUCENE_47,
+				new String[]{"header","body"}, aWrapper);
 
 		Query query = parser.parse(q);
 
@@ -38,12 +50,12 @@ public class ReaderByIndexerTest {
 
 		long end = System.currentTimeMillis();
 
-		System.out.println("Searching " + q + " ，totalTime is " + (end - start) + "ms" + " and the items searched are "
+		System.out.println("Searching " + q + " totalTime is " + (end - start) + "ms" + " and the items searched are "
 				+ hits.totalHits);
 
 		for (ScoreDoc scoreDoc : hits.scoreDocs) {
 			Document doc = indexSearch.doc(scoreDoc.doc);
-			System.out.println(doc.get("header"));
+			System.out.println(doc.get("header")+", "+doc.get("url"));
 		}
 
 		reader.close();
@@ -51,9 +63,9 @@ public class ReaderByIndexerTest {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		String indexDir = "/Users/vincent/Learning-Data/cs242/project/CS242-Project-Lucene/indexDir";
+		String indexDir = "../Index";
 
-		String query = "1916";
+		String query = "joystick";
 
 		try {
 			search(indexDir, query);
