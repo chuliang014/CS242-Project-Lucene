@@ -120,7 +120,7 @@ public class luceneIndexer {
 		HEADER.setBoost(1.5F);
 		doc.add(HEADER);
 		doc.add(new StringField("url", jso.get("url").toString(), Field.Store.YES));
-		doc.add(new TextField("body", jso.get("body").toString(), Field.Store.NO));
+		doc.add(new TextField("body", jso.get("body").toString(), Field.Store.YES));
 
 		return doc;
 	}

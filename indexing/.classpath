@@ -12,5 +12,6 @@
 	<classpathentry kind="lib" path="../dependencies/lucene-queryparser-4.7.2.jar"/>
 	<classpathentry kind="lib" path="../dependencies/lucene-core-4.7.2.jar"/>
 	<classpathentry kind="lib" path="../dependencies/lucene-analyzers-common-4.7.2.jar"/>
+	<classpathentry kind="lib" path="../dependencies/json-library.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
